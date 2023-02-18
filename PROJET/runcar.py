@@ -146,3 +146,247 @@ class Jeu:
             pyxel.text(self.taille_fenetre_x/2.4,self.taille_fenetre_y/2 - 20, 'JEU TERMINE', 10)
 
 Jeu()
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+import pyxel
+
+
+class voiture():
+
+    def __init__(self):
+        self.voiture_x = 125
+        self.voiture_y = 250
+        self.taille_voiture_x=25
+        self.taille_voiture_y=40
+
+
+    def update(self):
+        """déplacement avec les touches de directions"""
+        if pyxel.btn(pyxel.KEY_RIGHT) and self.voiture_x<200:
+            self.voiture_x = 125
+        if pyxel.btn(pyxel.KEY_LEFT) and self.voiture_x>0:
+            self.voiture_x = 45
+
+
+    def draw(self):
+        pyxel.rect(self.voiture_x, self.voiture_y-self.taille_voiture_y, self.taille_voiture_x, self.taille_voiture_y, 7)
+      
+    
+    
+    
+    import pyxel
+
+
+
+class bidon():
+
+    def __init__(self) :
+        self.pos_bidon=0
+        self.bidon_liste=[]
+        # initialisation des bulles fantomes
+        self.taille_bulle_fantome=5
+
+    def update(self):
+        """création aléatoire des bidons"""
+        if pyxel.frame_count==100:
+            if pyxel.rndi(0,1) == 0:
+                self.pos_bidon= 55
+            else:
+                self.pos_bidon=133
+            self.bidon_liste.append([self.pos_bidon , 0, 8 ])
+  
+
+        """déplacement des bidons et suppression s'ils sortent du cadre"""              
+        for bidon in self.bidon_liste:
+            bidon[1] += 1 #vitesse de déplacement (p*p)
+            if  bidon[1]> 300 :
+                self.bidon_liste.remove(bidon)
+         
+
+
+
+
+    def draw(self):
+        # bidon d'essence
+        for bul_fant in self.bidon_liste:
+            pyxel.circ(bul_fant[0], bul_fant[1], self.taille_bulle_fantome, bul_fant[2])
+            
+            
+            
+            
+            
+            
+ import pyxel
+
+
+class obstacles2:
+    def __init__(self):
+        self.pos_obs_x=0
+        self.pos_obs_y=0
+        self.taille_obs_x = 30
+        self.taille_obs_y = 30
+        self.obs_list=[]
+
+
+
+    def update(self):
+        if pyxel.frame_count== 100:
+            if pyxel.rndi(0,1) == 0:
+                self.pos_obs= 55
+            else:
+                self.pos_obs=133
+            self.obs_list.append([self.pos_obs , 0, 8 ])   
+  
+        for obstacle in self.obs_list:
+            obstacle[1] += 1 
+            if  obstacle[1]>300:
+                self.obs_list.remove(obstacle)
+
+
+    def draw(self):
+        for obs in self.obs_list:
+            pyxel.circ(obs[0], obs[1], 10, 7)
+           
+            
+            
+            
+  
+    
+    
+    
+
+# Bibliothèque
+import pyxel # https://github.com/kitao/pyxel/blob/main/docs/README.fr.md
+from datetime import datetime, timedelta
+from obs2 import *
+from essence import *
+from  voitures import *
+
+# Création de  l'objet
+class Jeu:
+    def __init__(self):
+        # position initiale de la bulle à l'ouverture de la fenetre
+        # (origine des positions : coin haut gauche)
+
+        self.position_game_over=0
+        self.taille_fenetre_x=200
+        self.taille_fenetre_y=300
+        self.voiture= voiture()
+        self.time = datetime.now()
+        self.bidons= bidon()
+        self.vitesse=100
+        self.obs=obstacles2()
+
+
+        self.essence=100
+        self.vie = 1
+        self.couleur = 0
+
+        # liste de couleurs
+        self.couleur_essence = [11,9,8]
+
+        # taille de la fenetre 200x300 pixels
+        # ne pas modifier
+        pyxel.init(self.taille_fenetre_x, self.taille_fenetre_y, title="RUN CAR",fps=self.vitesse)
+        # fps= vitesse de rafraichissement des images self.vitesse fois par seconde
+  
+        # chargement des images
+        # pyxel.load("car.pyxres")
+
+        """
+        #création de la mélodie
+        pyxel.sound(2).set(
+            "f0c1f0c1 g0d1g0d1 c1g1c1g1 a0e1a0e1" "f0c1f0c1 f0c1f0c1 g0d1g0d1 g0d1g0d1",
+            "t",
+            "7",
+            "n",
+            25,
+        )
+        """,
+        # https://github.com/kitao/pyxel/blob/main/python/pyxel/examples/04_sound_api.py
+
+        # On lance l’application Pyxel avec la fonction run qui crée
+        # deux processus basés sur les méthodes draw() et update() :
+        pyxel.run(self.update, self.draw)
+
+
+
+    
+    # Fonction reserve d'essence
+    def reserve_essence(self):
+        if datetime.now() > self.time + timedelta(seconds=0.1):
+            self.essence -= 1
+            self.time = datetime.now()
+
+    def alert_essence(self):
+        if self.essence > 70:
+            self.couleur = 0
+        elif self.essence < 69 and self.essence > 35:
+            self.couleur = 1
+        elif self.essence < 34 and self.essence >= 0:
+            self.couleur=2
+
+ 
+            
+    # =====================================================
+    # == UPDATE
+    # =====================================================
+    def update(self):
+        if self.essence > 0:
+            """mise à jour des variables """
+            # deplacement de ma voiture
+            self.voiture.update()
+            #update des bidons
+            self.bidons.update()
+            # diminution de l'essence présente dans la voiture
+            self.reserve_essence()
+            # couleur alerte de la jauge d'essence
+            self.alert_essence()
+            #les obstacles
+            self.obs.update()
+            
+
+
+
+
+
+    # =====================================================
+    # == DRAW
+    # =====================================================
+    def draw(self):
+        """création et positionnement des objets """
+        # vide la fenetre avec la couleur de fond 0
+        pyxel.cls(0)
+        # ma voiture
+        self.voiture.draw()
+
+        #affiche les bidons
+        self.bidons.draw()
+
+        #affiche les obstacles
+        self.obs.draw()
+
+        # affichage de l'essence
+        pyxel.rect(10, 7, 100, 14, 13) # fond de la jauge d'essence (rectangle)
+        pyxel.rect(10, 7, self.essence, 14, self.couleur_essence[self.couleur]) # rectangle jauge essence
+        pyxel.text(14,11, "Essence : " + str(self.essence) + "/100", 7) # texte du niveau d'essence.
+
+        # Fin du jeu
+        if self.vie == 0 or self.essence == 0:
+            pyxel.text(self.taille_fenetre_x/2.4,self.taille_fenetre_y/2 - 20, 'JEU TERMINE', 10)
+
+    
+
+
+Jeu()
+    
+    
+    
+  
